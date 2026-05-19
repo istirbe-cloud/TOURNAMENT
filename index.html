@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colpbol Tournament Manager</title>
+   
+    <!-- LINK TO YOUR SEPARATE DATA FILE HERE -->
+    <script src="data.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header><div class="tournament-logo"></div> COLPBOL TOURNAMENT</header>
+
+<nav>
+    <a onclick="showSection('teams', this)" class="active">Teams</a>
+    <a onclick="showSection('calendar', this)">Schedule</a>
+    <a onclick="showSection('match-center', this)">Match Center</a>
+    <a onclick="showSection('stats', this)" id="nav-standings">Standings</a>
+    <a onclick="showSection('scorers', this)">Scorers</a>
+    <a onclick="showSection('knockout', this)">Knockout Phase</a>
+</nav>
+
+<div class="container">
+    <!-- TEAMS SECTION -->
+    <section id="teams" class="active">
+        
+        <div class="form-box" style="background: #eef2f7; border-color: #d0d7de;">
+            <h3 style="margin-bottom: 8px;">🔄 Data Management Helper</h3>
+            <p style="font-size: 0.85rem; color: #57606a; margin-bottom: 15px;">
+                Your tournament details now load straight out of the <b>data.js</b> file! If you make live additions here, download the backup and copy its contents into your file to keep it permanently synced.
+            </p>
+            <button class="btn" style="background: #2da44e;" onclick="exportTournamentData()">📥 Download Updated Data Configuration</button>
+        </div>
+
+        <div id="team-list" class="card-grid" style="margin-top: 24px;"></div>
+        <div class="form-box" id="team-form-anchor">
+            <h3 id="team-form-title">Register New Team</h3>
+            <input type="text" id="t-name" placeholder="Team Name">
+            <input type="text" id="t-img" placeholder="Image URL">
+            <textarea id="t-members" placeholder="Members (comma separated)"></textarea>
+            <button class="btn" id="btn-submit-team" onclick="addTeam()">Register Team</button>
+        </div>
+
+        <div class="form-box" style="margin-top: 30px;">
+            <h3>Team Interviews</h3>
+            <div id="interview-list" style="margin-bottom: 15px;"></div>
+            <h4>Add New Interview</h4>
+            <input type="text" id="int-name" placeholder="Person / Team Name">
+            <input type="text" id="int-link" placeholder="Interview Link URL">
+            <button class="btn" style="background: var(--primary);" onclick="addInterview()">Save Interview</button>
+        </div>
+    </section>
+
+    <!-- SCHEDULE SECTION -->
+    <section id="calendar">
+        <div id="cal-render"></div>
+    </section>
+
+    <!-- MATCH CENTER -->
+    <section id="match-center">
+        <div id="match-list"></div>
+        <div class="form-box" id="match-form-anchor">
+            <h3 id="match-form-title">Post Match Result</h3>
+            <input type="date" id="m-date">
+            <input type="text" id="m-loc" placeholder="Pitch Location">
+            <input type="text" id="m-ref" placeholder="Referees">
+            <div style="display:flex; gap:5px;"><select id="m-tA"></select><input type="number" id="m-sA" placeholder="0"></div>
+            <div style="display:flex; gap:5px;"><select id="m-tB"></select><input type="number" id="m-sB" placeholder="0"></div>
+            <textarea id="m-lineupA" placeholder="Home Plantilla (comma separated names)"></textarea>
+            <textarea id="m-lineupB" placeholder="Away Plantilla (comma separated names)"></textarea>
+            <textarea id="m-goals" placeholder="Goalscorers (e.g. John Doe 12', Jane Doe 44')"></textarea>
+            <input type="text" id="m-mvp" placeholder="Match MVP">
+            <button class="btn" id="btn-submit-match" onclick="registerMatch()">Submit Result</button>
+        </div>
+    </section>
+
+    <!-- STANDINGS SECTION -->
+    <section id="stats">
+        <table>
+            <thead><tr><th>Pos</th><th>Team</th><th>PL</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr></thead>
+            <tbody id="stats-body"></tbody>
+        </table>
+    </section>
+
+    <!-- TOP SCORERS -->
+    <section id="scorers">
+        <div class="form-box" style="margin-top:0; margin-bottom:15px; background:#e8f4fd;">
+            <p style="margin:0; font-size:0.85rem; color:#1a2a6c;"><b> Tip:</b> Scorers update automatically based on your submitted results.</p>
+        </div>
+        <table>
+            <thead><tr><th>Rank</th><th>Player</th><th>Goals</th></tr></thead>
+            <tbody id="scorers-body"></tbody>
+        </table>
+    </section>
+
+    <!-- KNOCKOUT SECTION -->
+    <section id="knockout">
+        <div id="knockout-warning" class="form-box" style="background:#fff3cd; color:#856404; display:none;">
+            <p style="margin:0; font-weight:bold;">⚠️ Knockout phase locked</p>
+            <p style="margin:5px 0 0 0; font-size:0.9rem;">The knockout phase starts automatically once ALL registered teams have played exactly 4 matches in the standings center.</p>
+        </div>
+        
+        <div id="knockout-content" style="display:none;">
+            <h2>Knockout Brackets</h2>
+            <div id="knockout-matches-list"></div>
+
+            <div class="form-box" id="knockout-form-anchor">
+                <h3 id="ko-form-title">Post Knockout Result</h3>
+                <select id="ko-match-select" onchange="loadKoTeamsData()">
+                    <option value="semi1">Semifinal 1 (1st vs 4th)</option>
+                    <option value="semi2">Semifinal 2 (2nd vs 3rd)</option>
+                    <option value="final">Grand Final</option>
+                </select>
+                <input type="date" id="ko-date">
+                <input type="text" id="ko-loc" placeholder="Pitch Location">
+                <input type="text" id="ko-ref" placeholder="Referees">
+                <div style="display:flex; gap:5px;"><input type="text" id="ko-tA" readonly style="background:#eee;"><input type="number" id="ko-sA" placeholder="0"></div>
+                <div style="display:flex; gap:5px;"><input type="text" id="ko-tB" readonly style="background:#eee;"><input type="number" id="ko-sB" placeholder="0"></div>
+                <textarea id="ko-lineupA" placeholder="Home Plantilla (comma separated names)"></textarea>
+                <textarea id="ko-lineupB" placeholder="Away Plantilla (comma separated names)"></textarea>
+                <textarea id="ko-goals" placeholder="Goalscorers (e.g. John Doe 12', Jane Doe 44')"></textarea>
+                <input type="text" id="ko-mvp" placeholder="Match MVP">
+                <button class="btn" style="background:var(--accent); color: #1a2a6c;" id="btn-submit-ko" onclick="registerKnockoutMatch()">Submit Elimination Result</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- MATCH REPORT OVERLAY -->
+<div id="report-overlay">
+    <div class="report-nav"><span onclick="closeReport()" style="cursor:pointer; margin-right:15px;">❮ Back</span> Match Detail</div>
+    <div id="report-content"></div>
+</div>
+
+<script>
+    // System checks if global object from data.js exists, otherwise relies on empty templates
+    const fallbackDataSource = (typeof DEFAULT_TOURNAMENT_DATA !== 'undefined') ? DEFAULT_TOURNAMENT_DATA : {};
+
+    let teams = JSON.parse(localStorage.getItem('colpbol_teams')) || fallbackDataSource.teams || [];
+    let matches = JSON.parse(localStorage.getItem('colpbol_matches')) || fallbackDataSource.matches || [];
+    let scheduledMatches = JSON.parse(localStorage.getItem('colpbol_sched')) || fallbackDataSource.scheduledMatches || {};
+    let interviews = JSON.parse(localStorage.getItem('colpbol_interviews')) || fallbackDataSource.interviews || [];
+    let knockoutMatches = JSON.parse(localStorage.getItem('colpbol_knockout')) || fallbackDataSource.knockoutMatches || { semi1: null, semi2: null, final: null };
+
+    let editTeamIndex = null;
+    let editMatchIndex = null;
+    let editKoType = null;
+
+    function saveAll() {
+        localStorage.setItem('colpbol_teams', JSON.stringify(teams));
+        localStorage.setItem('colpbol_matches', JSON.stringify(matches));
+        localStorage.setItem('colpbol_sched', JSON.stringify(scheduledMatches));
+        localStorage.setItem('colpbol_interviews', JSON.stringify(interviews));
+        localStorage.setItem('colpbol_knockout', JSON.stringify(knockoutMatches));
+    }
+
+    function exportTournamentData() {
+        const fullBackup = {
+            teams: teams,
+            matches: matches,
+            scheduledMatches: scheduledMatches,
+            interviews: interviews,
+            knockoutMatches: knockoutMatches
+        };
+        
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "data.js");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function refreshAllViews() {
+        renderTeams();
+        renderMatchList();
+        calculateStandings();
+        renderScorers();
+        updateDropdowns();
+        renderInterviews();
+        checkAndRenderKnockout();
+    }
+
+    function showSection(id, el) {
+        document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
+        if(id === 'calendar') renderCalendar();
+        if(id === 'match-center' || id === 'stats') updateDropdowns();
+        if(id === 'stats') calculateStandings();
+        if(id === 'scorers') renderScorers();
+        if(id === 'knockout') checkAndRenderKnockout();
+    }
+
+    function addTeam() {
+        const n = document.getElementById('t-name').value;
+        const i = document.getElementById('t-img').value || 'https://placeholder.com';
+        const m = document.getElementById('t-members').value.split(',').map(x => x.trim()).filter(x => x !== "");
+        if(!n) return;
+
+        if (editTeamIndex !== null) {
+            teams[editTeamIndex] = { name: n, img: i, members: m, w:0, d:0, l:0, pts:0, pj:0 };
+            editTeamIndex = null;
+            document.getElementById('team-form-title').innerText = "Register New Team";
+            document.getElementById('btn-submit-team').innerText = "Register Team";
+        } else {
+            teams.push({ name: n, img: i, members: m, w:0, d:0, l:0, pts:0, pj:0 });
+        }
+
+        saveAll();
+        renderTeams();
+        document.getElementById('t-name').value = '';
+        document.getElementById('t-img').value = '';
+        document.getElementById('t-members').value = '';
+    }
+
+    function prepareEditTeam(index) {
+        editTeamIndex = index;
+        const t = teams[index];
+        document.getElementById('t-name').value = t.name;
+        document.getElementById('t-img').value = t.img === 'https://placeholder.com' ? '' : t.img;
+        document.getElementById('t-members').value = t.members.join(', ');
+        
+        document.getElementById('team-form-title').innerText = "📝 Editing Team: " + t.name;
+        document.getElementById('btn-submit-team').innerText = "Update Team Data";
+        document.getElementById('team-form-anchor').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function renderTeams() {
+        document.getElementById('team-list').innerHTML = teams.map((t, idx) => `
+            <div class="team-card-ui">
+                <img src="${t.img}" class="team-img">
+                <h3>${t.name}</h3>
+                <div style="margin-bottom:12px;">${t.members.map(x => `<span class="member-tag">${x}</span>`).join('')}</div>
+                <button class="btn-edit" onclick="prepareEditTeam(${idx})">⚙️ Edit Team</button>
+            </div>`).join('');
+    }
+
+    function renderCalendar() {
+        const cont = document.getElementById('cal-render'); cont.innerHTML = '';
+        renderMonth(cont, "April", 30, 2, 15); renderMonth(cont, "May", 31, 4, 1);
+    }
+
+    function renderMonth(cont, mName, days, offset, startDisplayDay) {
+        let wrapper = document.createElement('div'); wrapper.className = 'calendar-wrapper';
+        let html = `<div class="cal-title">${mName} 2026</div><div class="cal-grid">`;
+        ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(h => html += `<div class="cal-head">${h}</div>`);
+        for(let i=0; i < offset; i++) html += `<div class="cal-day empty"></div>`;
+        for(let d=1; d <= days; d++) {
+            const isVisible = (mName === "May" || d >= startDisplayDay);
+            const mKey = `${mName}-${d}`;
+            const matchesHtml = (scheduledMatches[mKey] || []).map(m => `<div class="match-tag">${m}</div>`).join('');
+            html += `<div class="cal-day ${isVisible ? '' : 'empty'}"><span class="day-num">${isVisible ? d : ''}</span>${isVisible ? matchesHtml : ''}</div>`;
+        }
+        wrapper.innerHTML = html + `</div>`;
+        cont.appendChild(wrapper);
+    }
+
+    function registerMatch() {
+        const dateVal = document.getElementById('m-date').value;
+        const m = {
+            tA: document.getElementById('m-tA').value, sA: parseInt(document.getElementById('m-sA').value) || 0,
+            tB: document.getElementById('m-tB').value, sB: parseInt(document.getElementById('m-sB').value) || 0,
+            date: dateVal, ref: document.getElementById('m-ref').value,
+            mvp: document.getElementById('m-mvp').value, loc: document.getElementById('m-loc').value,
+            linA: document.getElementById('m-lineupA').value, linB: document.getElementById('m-lineupB').value,
+            goals: document.getElementById('m-goals').value
+        };
+
+        if (editMatchIndex !== null) {
+            const oldMatch = matches[editMatchIndex];
+            if (oldMatch.date) {
+                const dO = new Date(oldMatch.date);
+                const mNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                const oldKey = `${mNames[dO.getMonth()]}-${dO.getDate() + 1}`;
+                if (scheduledMatches[oldKey]) {
+                    scheduledMatches[oldKey] = scheduledMatches[oldKey].filter(x => !x.includes(`${oldMatch.tA} `));
+                }
+            }
+            
+            matches[editMatchIndex] = m;
+            editMatchIndex = null;
+            document.getElementById('match-form-title').innerText = "Post Match Result";
+            document.getElementById('btn-submit-match').innerText = "Submit Result";
+        } else {
+            matches.push(m);
+        }
+        
+        if(dateVal) {
+            const dObj = new Date(dateVal);
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const key = `${monthNames[dObj.getMonth()]}-${dObj.getDate() + 1}`;
+            if(!scheduledMatches[key]) scheduledMatches[key] = [];
+            scheduledMatches[key].push(`${m.tA} ${m.sA}-${m.sB} ${m.tB}`);
+        }
+
+        saveAll();
+        renderMatchList(); calculateStandings(); renderScorers();
+        
+        document.getElementById('m-date').value = '';
+        document.getElementById('m-loc').value = '';
+        document.getElementById('m-ref').value = '';
+        document.getElementById('m-sA').value = '';
+        document.getElementById('m-sB').value = '';
+        document.getElementById('m-lineupA').value = '';
+        document.getElementById('m-lineupB').value = '';
+        document.getElementById('m-goals').value = '';
+        document.getElementById('m-mvp').value = '';
+
+        alert("Result Saved Successfully!");
+    }
+
+    function prepareEditMatch(index) {
+        editMatchIndex = index;
+        const m = matches[index];
+        
+        document.getElementById('m-date').value = m.date || '';
+        document.getElementById('m-loc').value = m.loc || '';
+        document.getElementById('m-ref').value = m.ref || '';
+        document.getElementById('m-tA').value = m.tA;
+        document.getElementById('m-sA').value = m.sA;
+        document.getElementById('m-tB').value = m.tB;
+        document.getElementById('m-sB').value = m.sB;
+        document.getElementById('m-lineupA').value = m.linA || '';
+        document.getElementById('m-lineupB').value = m.linB || '';
+        document.getElementById('m-goals').value = m.goals || '';
+        document.getElementById('m-mvp').value = m.mvp || '';
+
+        document.getElementById('match-form-title').innerText = "📝 Correcting Match Record";
+        document.getElementById('btn-submit-match').innerText = "Apply Structural Updates";
+        document.getElementById('match-form-anchor').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function calculateStandings() {
+        teams.forEach(t => { t.w=0; t.d=0; t.l=0; t.pj=0; t.pts=0; });
+        matches.forEach(m => {
+            let h = teams.find(t => t.name === m.tA); let a = teams.find(t => t.name === m.tB);
+            if(h && a) {
+                h.pj++; a.pj++;
+                if(m.sA > m.sB) { h.w++; a.l++; h.pts+=3; }
+                else if(m.sA < m.sB) { a.w++; h.l++; a.pts+=3; }
+                else { h.d++; a.d++; h.pts+=1; a.pts+=1; }
+            }
+        });
+        const sorted = [...teams].sort((a,b) => b.pts - a.pts);
+        document.getElementById('stats-body').innerHTML = sorted.map((t, i) => `
+            <tr><td>${i+1}</td><td>${t.name}</td><td>${t.pj}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td><strong>${t.pts}</strong></td></tr>`).join('');
+        return sorted;
+    }
+
+    function renderScorers() {
+        let playerGoals = {};
+        matches.forEach(m => processMatchGoals(m, playerGoals));
+        Object.values(knockoutMatches).forEach(m => { if(m) processMatchGoals(m, playerGoals); });
+
+        const sorted = Object.entries(playerGoals).sort((a,b) => b[1] - a[1]);
+        document.getElementById('scorers-body').innerHTML = sorted.map((s, i) => `
+            <tr><td>${i+1}</td><td>${s[0]}</td><td><strong>${s[1]}</strong></td></tr>`).join('');
+    }
+
+    function processMatchGoals(m, playerGoals) {
+        if (!m || !m.goals) return;
+        const scorersArray = m.goals.split(',').map(x => x.trim()).filter(x => x !== "");
+        scorersArray.forEach(entry => {
+            const nameMatch = entry.match(/^([^0-9']+)/);
+            if(nameMatch) {
+                const name = nameMatch[0].trim();
+                playerGoals[name] = (playerGoals[name] || 0) + 1;
+            }
+        });
+    }
+
+    function renderMatchList() {
+        document.getElementById('match-list').innerHTML = matches.map((m, i) => `
+            <div class="match-card-wrapper">
+                <div class="match-summary-card" onclick="openReport(${i})">
+                    <span class="m-team-name">${m.tA}</span><span class="m-score-view">${m.sA} - ${m.sB}</span><span class="m-team-name" style="text-align:right;">${m.tB}</span>
+                </div>
+                <button class="btn-edit" onclick="prepareEditMatch(${i})">⚙️ Edit</button>
+            </div>`).join('');
+    }
+
+    function openReport(i) { renderOverlayHTML(matches[i]); }
+    function openKoReport(type) { if(knockoutMatches[type]) renderOverlayHTML(knockoutMatches[type]); }
+
+    function renderOverlayHTML(m) {
+        document.getElementById('report-content').innerHTML = `
+            <div class="fn-scoreboard">
+                <div class="fn-big-score" style="font-size:2.5rem; font-weight:800; color:var(--dark);">${m.sA} - ${m.sB}</div>
+                <div style="font-weight:bold; font-size:1.2rem; margin:5px 0;">${m.tA} vs ${m.tB}</div>
+                <div style="font-size:0.8rem; color:#888;">📍 ${m.loc || 'N/A'} | ⏱️ ${m.date || 'N/A'} | 👔 Ref: ${m.ref || 'N/A'}</div>
+                <div style="margin-top:12px;"><span style="background:#fff3cd; padding:6px 16px; border-radius:20px; font-size:0.85rem; font-weight:bold; color:#664d03;">🌟 MVP: ${m.mvp || 'None'}</span></div>
+            </div>
+            <div class="fn-tabs"><div class="fn-tab active" onclick="setTab('g', this)">Goals</div><div class="fn-tab" onclick="setTab('l', this)">Lineups</div></div>
+            <div id="v-g" style="padding:15px;">${m.goals ? m.goals.split(',').map(x => `<div class="player-row">⚽ ${x.trim()}</div>`).join('') : '<p style="color:#999;text-align:center;">No goal data</p>'}</div>
+            <div id="v-l" style="display:none;">
+                <div class="lineup-header">${m.tA}</div>${m.linA ? m.linA.split(',').map((p, x) => `<div class="player-row"><div class="p-num">${x+1}</div><div class="p-avatar"></div>${p.trim()}</div>`).join('') : ''}
+                <div class="lineup-header">${m.tB}</div>${m.linB ? m.linB.split(',').map((p, x) => `<div class="player-row"><div class="p-num">${x+1}</div><div class="p-avatar"></div>${p.trim()}</div>`).join('') : ''}
+            </div>`;
+        document.getElementById('report-overlay').classList.add('active');
+    }
+
+    function setTab(t, el) {
+        document.querySelectorAll('.fn-tab').forEach(x => x.classList.remove('active')); el.classList.add('active');
+        document.getElementById('v-g').style.display = t==='g'?'block':'none';
+        document.getElementById('v-l').style.display = t==='l'?'block':'none';
+    }
+    function updateDropdowns() {
+        const n = teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+        const mtA = document.getElementById('m-tA'); const mtB = document.getElementById('m-tB');
+        if(mtA && mtB) { mtA.innerHTML = n; mtB.innerHTML = n; }
+    }
+    function closeReport() { document.getElementById('report-overlay').classList.remove('active'); }
+
+    function addInterview() {
+        const name = document.getElementById('int-name').value;
+        const link = document.getElementById('int-link').value;
+        if(!name || !link) return;
+        interviews.push({ name: name, link: link });
+        saveAll();
+        renderInterviews();
+        document.getElementById('int-name').value = '';
+        document.getElementById('int-link').value = '';
+    }
+
+    function renderInterviews() {
+        if(interviews.length === 0) {
+            document.getElementById('interview-list').innerHTML = '<p style="color:#888; font-size:0.9rem;">No interviews posted yet.</p>';
+            return;
+        }
+        document.getElementById('interview-list').innerHTML = interviews.map(i => `
+            <div class="interview-item">
+                <span>🎤 <b>${i.name}</b></span>
+                <a href="${i.link}" target="_blank">Watch Interview ↗</a>
+            </div>`).join('');
+    }
+
+    function checkAndRenderKnockout() {
+        calculateStandings();
+        if(teams.length < 4) {
+            document.getElementById('knockout-warning').style.display = 'block';
+            document.getElementById('knockout-warning').innerHTML = '<p style="margin:0; font-weight:bold;">⚠️ Missing Teams</p><p style="margin:5px 0 0 0; font-size:0.9rem;">You need at least 4 registered teams to load brackets.</p>';
+            document.getElementById('knockout-content').style.display = 'none';
+            return;
+        }
+
+        let allPlayed4 = teams.every(t => t.pj >= 4);
+        if(!allPlayed4) {
+            document.getElementById('knockout-warning').style.display = 'block';
+            document.getElementById('knockout-content').style.display = 'none';
+        } else {
+            document.getElementById('knockout-warning').style.display = 'none';
+            document.getElementById('knockout-content').style.display = 'block';
+            renderKnockoutBrackets();
+            loadKoTeamsData();
+        }
+    }
+
+    function renderKnockoutBrackets() {
+        const sorted = [...teams].sort((a,b) => b.pts - a.pts);
+        const t1 = sorted[0].name; const t2 = sorted[1].name; const t3 = sorted[2].name; const t4 = sorted[3].name;
+        let html = '';
+
+        html += `<div style="margin-top:15px; font-weight:bold; color:var(--dark);">SEMIFINAL 1</div>`;
+        if(knockoutMatches.semi1) {
+            html += `
+            <div class="match-card-wrapper">
+                <div class="match-summary-card" onclick="openKoReport('semi1')">
+                    <span class="m-team-name">${knockoutMatches.semi1.tA}</span><span class="m-score-view">${knockoutMatches.semi1.sA} - ${knockoutMatches.semi1.sB}</span><span class="m-team-name" style="text-align:right;">${knockoutMatches.semi1.tB}</span>
+                </div>
+                <button class="btn-edit" onclick="prepareEditKo('semi1')">⚙️ Edit</button>
+            </div>`;
+        } else {
+            html += `<div class="match-summary-card" style="cursor:default; background:#f9f9f9; border-style:dashed;"><span class="m-team-name" style="color:#777;">(1º) ${t1}</span><span class="m-score-view">VS</span><span class="m-team-name" style="text-align:right; color:#777;">(4º) ${t4}</span></div>`;
+        }
+
+        html += `<div style="margin-top:15px; font-weight:bold; color:var(--dark);">SEMIFINAL 2</div>`;
+        if(knockoutMatches.semi2) {
+            html += `
+            <div class="match-card-wrapper">
+                <div class="match-summary-card" onclick="openKoReport('semi2')">
+                    <span class="m-team-name">${knockoutMatches.semi2.tA}</span><span class="m-score-view">${knockoutMatches.semi2.sA} - ${knockoutMatches.semi2.sB}</span><span class="m-team-name" style="text-align:right;">${knockoutMatches.semi2.tB}</span>
+                </div>
+                <button class="btn-edit" onclick="prepareEditKo('semi2')">⚙️ Edit</button>
+            </div>`;
+        } else {
+            html += `<div class="match-summary-card" style="cursor:default; background:#f9f9f9; border-style:dashed;"><span class="m-team-name" style="color:#777;">(2º) ${t2}</span><span class="m-score-view">VS</span><span class="m-team-name" style="text-align:right; color:#777;">(3º) ${t3}</span></div>`;
+        }
+
+        html += `<div style="margin-top:25px; font-weight:bold; color:var(--primary); font-size:1.1rem;">🏆 GRAND FINAL</div>`;
+        if(knockoutMatches.final) {
+            html += `
+            <div class="match-card-wrapper">
+                <div class="match-summary-card" onclick="openKoReport('final')" style="border: 2px solid var(--accent); background:#fffdf5;">
+                    <span class="m-team-name" style="font-weight:bold;">${knockoutMatches.final.tA}</span><span class="m-score-view" style="background:var(--accent); color:white;">${knockoutMatches.final.sA} - ${knockoutMatches.final.sB}</span><span class="m-team-name" style="text-align:right; font-weight:bold;">${knockoutMatches.final.tB}</span>
+                </div>
+                <button class="btn-edit" onclick="prepareEditKo('final')">⚙️ Edit</button>
+            </div>`;
+        } else {
+            let labelA = "Winner Semi 1", labelB = "Winner Semi 2";
+            if(knockoutMatches.semi1) labelA = knockoutMatches.semi1.sA > knockoutMatches.semi1.sB ? knockoutMatches.semi1.tA : knockoutMatches.semi1.tB;
+            if(knockoutMatches.semi2) labelB = knockoutMatches.semi2.sA > knockoutMatches.semi2.sB ? knockoutMatches.semi2.tA : knockoutMatches.semi2.tB;
+            html += `<div class="match-summary-card" style="cursor:default; background:#fffdf5; border:1px dashed var(--accent);"><span class="m-team-name" style="color:#999; font-style:italic;">${labelA}</span><span class="m-score-view">🏆</span><span class="m-team-name" style="text-align:right; color:#999; font-style:italic;">${labelB}</span></div>`;
+        }
+
+        document.getElementById('knockout-matches-list').innerHTML = html;
+    }
+
+    function loadKoTeamsData() {
+        if (editKoType !== null) return;
+        const sorted = [...teams].sort((a,b) => b.pts - a.pts);
+        const type = document.getElementById('ko-match-select').value;
+        let inputA = document.getElementById('ko-tA'); let inputB = document.getElementById('ko-tB');
+        if(!inputA || !inputB) return;
+
+        if(type === 'semi1' && sorted[0] && sorted[3]) { inputA.value = sorted[0].name; inputB.value = sorted[3].name; } 
+        else if(type === 'semi2' && sorted[1] && sorted[2]) { inputA.value = sorted[1].name; inputB.value = sorted[2].name; } 
+        else if(type === 'final') {
+            let winner1 = "Winner Semi 1", winner2 = "Winner Semi 2";
+            if(knockoutMatches.semi1) winner1 = knockoutMatches.semi1.sA > knockoutMatches.semi1.sB ? knockoutMatches.semi1.tA : knockoutMatches.semi1.tB;
+            if(knockoutMatches.semi2) winner2 = knockoutMatches.semi2.sA > knockoutMatches.semi2.sB ? knockoutMatches.semi2.tA : knockoutMatches.semi2.tB;
+            inputA.value = winner1; inputB.value = winner2;
+        }
+    }
+
+    function prepareEditKo(type) {
+        editKoType = type;
+        const m = knockoutMatches[type];
+        
+        document.getElementById('ko-match-select').value = type;
+        document.getElementById('ko-date').value = m.date || '';
+        document.getElementById('ko-loc').value = m.loc || '';
+        document.getElementById('ko-ref').value = m.ref || '';
+        document.getElementById('ko-tA').value = m.tA;
+        document.getElementById('ko-sA').value = m.sA;
+        document.getElementById('ko-tB').value = m.tB;
+        document.getElementById('ko-sB').value = m.sB;
+        document.getElementById('ko-lineupA').value = m.linA || '';
+        document.getElementById('ko-lineupB').value = m.linB || '';
+        document.getElementById('ko-goals').value = m.goals || '';
+        document.getElementById('ko-mvp').value = m.mvp || '';
+
+        document.getElementById('ko-form-title').innerText = "📝 Adjusting Playoff Record";
+        document.getElementById('btn-submit-ko').innerText = "Update Playoff Phase Game";
+        document.getElementById('knockout-form-anchor').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function registerKnockoutMatch() {
+        const type = document.getElementById('ko-match-select').value;
+        const tA = document.getElementById('ko-tA').value;
+        const tB = document.getElementById('ko-tB').value;
+        
+        if(type === 'final' && editKoType === null && (!knockoutMatches.semi1 || !knockoutMatches.semi2)) {
+            alert("Please submit both Semifinal results before saving the Grand Final!");
+            return;
+        }
+
+        knockoutMatches[type] = {
+            tA: tA, sA: parseInt(document.getElementById('ko-sA').value) || 0,
+            tB: tB, sB: parseInt(document.getElementById('ko-sB').value) || 0,
+            date: document.getElementById('ko-date').value, ref: document.getElementById('ko-ref').value,
+            mvp: document.getElementById('ko-mvp').value, loc: document.getElementById('ko-loc').value,
+            linA: document.getElementById('ko-lineupA').value, linB: document.getElementById('ko-lineupB').value,
+            goals: document.getElementById('ko-goals').value
+        };
+
+        editKoType = null;
+        document.getElementById('ko-form-title').innerText = "Post Knockout Result";
+        document.getElementById('btn-submit-ko').innerText = "Submit Elimination Result";
+
+        saveAll();
+        checkAndRenderKnockout();
+        renderScorers();
+        
+        document.getElementById('ko-date').value = '';
+        document.getElementById('ko-ref').value = '';
+        document.getElementById('ko-mvp').value = '';
+        document.getElementById('ko-loc').value = '';
+        document.getElementById('ko-lineupA').value = '';
+        document.getElementById('ko-lineupB').value = '';
+        document.getElementById('ko-goals').value = '';
+        document.getElementById('ko-sA').value = '';
+        document.getElementById('ko-sB').value = '';
+        
+        alert("Elimination Match Saved!");
+    }
+
+    window.onload = () => {
+        refreshAllViews();
+    };
+</script>
+</body>
+</html>
