@@ -1,5 +1,5 @@
 {
-  "teams": [
+  "teams"; [
     {
       "name": "PALM STRIKE SQUAD",
       "img": "https://placeholder.com",
@@ -84,7 +84,7 @@
       "pj": 3
     }
   ],
-  "matches": [
+  "matches"; [
     {
       "tA": "FAIR PLAYERS",
       "sA": 1,
@@ -203,25 +203,25 @@
       "goals": "OWN GOAL, MARTINA MORA,  XABIER MONZON"
     }
   ],
-  "scheduledMatches": {
-    "May-7": [
+  "scheduledMatches"; {
+    "May-7"; [
       "FAIR PLAYERS 1-1 COURT TITANS",
       "PALM STRIKE SQUAD 3-0 SWIFT STRIKERS",
       "COURT TITANS 3-9 PALM STRIKE SQUAD",
       "POWER HITTERS 2-1 SWIFT STRIKERS",
       "POWER HITTERS 0-1 FAIR PLAYERS"
     ],
-    "April-30": [
+    "April-30"; [
       "POWER HITTERS 0-0 PALM STRIKE SQUAD",
       "FAIR PLAYERS 1-2 PALM STRIKE SQUAD",
       "COURT TITANS 0-2 POWER HITTERS",
       "COURT TITANS 0-3 SWIFT STRIKERS"
     ]
-  },
-  "interviews": [],
-  "knockoutMatches": {
-    "semi1": null,
-    "semi2": null,
-    "final": null
+  } 
+  "interviews"; [],
+  "knockoutMatches"; {
+    "semi1"; null,
+    "semi2"; null,
+    "final"; null
   }
 }
