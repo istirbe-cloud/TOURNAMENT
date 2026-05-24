@@ -2,7 +2,7 @@ const DEFAULT_TOURNAMENT_DATA = {
   "teams": [
     {
       "name": "PALM STRIKE SQUAD",
-      "img": "https://placeholder.com",
+      "img": "https://i.pinimg.com/736x/d0/0d/66/d00d6649fdcf1399341bf349b0f36fe6.jpg",
       "members": [
         "PAULA BEORLEGUI",
         "ALICE NAVARRO",
@@ -19,7 +19,7 @@ const DEFAULT_TOURNAMENT_DATA = {
     },
     {
       "name": "SWIFT STRIKERS",
-      "img": "https://placeholder.com",
+      "img": "https://i.pinimg.com/736x/57/30/1e/57301e09b4b09943eb7fcaaf8ae587f1.jpg",
       "members": [
         "XABIER MONZON",
         "MARTINA MORA",
@@ -27,15 +27,15 @@ const DEFAULT_TOURNAMENT_DATA = {
         "MAISSAE BELOUALI",
         "UXUE AZCONA"
       ],
-      "w": 1,
+      "w": 2,
       "d": 0,
       "l": 2,
-      "pts": 3,
-      "pj": 3
+      "pts": 6,
+      "pj": 4
     },
     {
       "name": "COURT TITANS",
-      "img": "https://placeholder.com",
+      "img": "https://i.pinimg.com/736x/27/b2/ef/27b2efb40106e32f60d43a8ea6a12271.jpg",
       "members": [
         "JULIA PROTOMARTIR",
         "MARTÍN DURÁN",
@@ -52,7 +52,7 @@ const DEFAULT_TOURNAMENT_DATA = {
     },
     {
       "name": "POWER HITTERS",
-      "img": "https://placeholder.com",
+      "img": "https://i.pinimg.com/736x/31/3f/db/313fdbfa6b3d8e63fc8b622c012afbda.jpg",
       "members": [
         "NORA GARCIA",
         "CHLOE GONZALEZ",
@@ -69,7 +69,7 @@ const DEFAULT_TOURNAMENT_DATA = {
     },
     {
       "name": "FAIR PLAYERS",
-      "img": "https://placeholder.com",
+      "img": "https://i.pinimg.com/736x/49/01/33/49013369472c6517cca23b6b121ef128.jpg",
       "members": [
         "IRAIA ARBIZU",
         "VICTORIA HINOJOSA",
@@ -79,9 +79,9 @@ const DEFAULT_TOURNAMENT_DATA = {
       ],
       "w": 1,
       "d": 1,
-      "l": 1,
+      "l": 2,
       "pts": 4,
-      "pj": 3
+      "pj": 4
     }
   ],
   "matches": [
@@ -201,6 +201,19 @@ const DEFAULT_TOURNAMENT_DATA = {
       "linA": "MARTIN DURAN, DANIEL AGUERRI, MARA REDONDO, AMAIA ESPINOSA, JULIA PROTOMARTIR, BASMA KARMAOUI",
       "linB": "PABLO AYERRA, MARTINA MORA, UXUE AZCONA, MAISSAE BELOUALI, XABIER MONZON",
       "goals": "OWN GOAL, MARTINA MORA,  XABIER MONZON"
+    },
+    {
+      "tA": "FAIR PLAYERS",
+      "sA": 4,
+      "tB": "SWIFT STRIKERS",
+      "sB": 5,
+      "date": "2026-05-13",
+      "ref": "FLORENCIO IBIRICU & MIGUEL ARASTI",
+      "mvp": "IOSUA STIRBEI",
+      "loc": "RED COURT 2",
+      "linA": "MARKEL AGUIRRE, SAIOA LORENZO, VICTORIA HINOJOSA, IRAIA ARBIZU, IOSUA STIRBEI",
+      "linB": "MARTINA MORA, PABLO AYERRA, MAISSAE BELOUALI, UXUE AZCONA, XABIER MONZON",
+      "goals": "UXUE AZCONA, XABIER MONZON, XABIER MONZON, MARKEL AGUIRRE, SAIOA LORENZO, IOSUA STIRBEI, MARTINA MORA, IOSUA STIRBEI, XABIER MONZON"
     }
   ],
   "scheduledMatches": {
@@ -216,12 +229,51 @@ const DEFAULT_TOURNAMENT_DATA = {
       "FAIR PLAYERS 1-2 PALM STRIKE SQUAD",
       "COURT TITANS 0-2 POWER HITTERS",
       "COURT TITANS 0-3 SWIFT STRIKERS"
+    ],
+    "May-14": [
+      "FAIR PLAYERS 4-5 SWIFT STRIKERS"
     ]
   },
   "interviews": [],
   "knockoutMatches": {
-    "semi1": null,
-    "semi2": null,
-    "final": null
+    "semi1": {
+      "tA": "PALM STRIKE SQUAD",
+      "sA": 5,
+      "tB": "FAIR PLAYERS",
+      "sB": 0,
+      "date": "2026-05-20",
+      "ref": "MARTIN DURAN, MARA REDONDO & JULIA PROTOMARTIR",
+      "mvp": "MIGUEL ARASTI",
+      "loc": "RED COURT 2",
+      "linA": "FLORENCIO IBIRICU, PAULA BEORLEGUI, ALICE NAVARRO, MIGUEL ARASTI, ROUMAISSAE AZOUIAR, DOUAA NAKIR",
+      "linB": "MARKEL AGUIRRE, SAIOA LORENZO, VICTORIA HINOJOSA, IRAIA ARBIZU, IOSUA STIRBEI",
+      "goals": "MIGUEL ARASTI, MIGUEL ARASTI, MIGUEL ARASTI, FLORENCIO IBIRICU, FLORENCIO IBIRICU"
+    },
+    "semi2": {
+      "tA": "POWER HITTERS",
+      "sA": 0,
+      "tB": "SWIFT STRIKERS",
+      "sB": 2,
+      "date": "2026-05-20",
+      "ref": "BASMA KARMAOUI",
+      "mvp": "XABIER MONZON",
+      "loc": "RED COURT 1",
+      "linA": "NORA GARCIA, CHLOE GONZALEZ, CARLA PALACIOS, OIHANE MARTIN, MARINA AGUERRI",
+      "linB": "UXUE AZCONA, MAISSAE BELOUALI, PABLO AYERRA, MARTINA MORA, XABIER MONZON",
+      "goals": "XABIER MONZON, XABIER MONZON"
+    },
+    "final": {
+      "tA": "PALM STRIKE SQUAD",
+      "sA": 2,
+      "tB": "SWIFT STRIKERS",
+      "sB": 0,
+      "date": "2026-05-20",
+      "ref": "MARKEL AGUIRRE, MARTIN DURAN, DANIEL AGUERRI & IOSUA STIRBEI",
+      "mvp": "FLORENCIO IBIRICU",
+      "loc": "RED COURT 1",
+      "linA": "FLORENCIO IBIRICU, MIGUEL ARASTI, ALICE NAVARRO, PAULA BEORLEGUI",
+      "linB": "PABLO AYERRA, MARTINA MORA, UXUE AZCONA, XABIER MONZON",
+      "goals": "FLORENCIO IBIRICU, FLORENCIO IBIRICU"
+    }
   }
-};
+}
