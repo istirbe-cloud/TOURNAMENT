@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Colpbol Tournament Manager</title>
    
-    <!-- LINK TO YOUR SEPARATE DATA FILE HERE -->
     <script src="data.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -23,7 +22,6 @@
 </nav>
 
 <div class="container">
-    <!-- TEAMS SECTION -->
     <section id="teams" class="active">
         
         <div class="form-box" style="background: #eef2f7; border-color: #d0d7de;">
@@ -34,7 +32,33 @@
             <button class="btn" style="background: #2da44e;" onclick="exportTournamentData()">📥 Download Updated Data Configuration</button>
         </div>
 
-        <div id="team-list" class="card-grid" style="margin-top: 24px;"></div>
+        <div style="margin-top: 30px;">
+            <h2>Tournament News Bulletin</h2>
+            <div id="news-list" class="card-grid" style="margin-top: 15px;"></div>
+            
+            <div class="form-box" style="margin-top: 20px; background-color: #fdfdfd;">
+                <h3>Publish Live Announcement</h3>
+                <input type="text" id="news-title" placeholder="Article Headline Title">
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <input type="text" id="news-url" placeholder="Paste Image Link / Google Drive Link URL" style="margin: 0;">
+                    </div>
+                    <div style="font-size: 0.85rem; color: #777; font-weight: bold;">OR</div>
+                    <div>
+                        <button class="btn" type="button" style="background: #6c757d; padding: 11px 16px; font-size: 0.9rem;" onclick="document.getElementById('news-file-upload').click()">🖼️ Upload Local Image File</button>
+                        <input type="file" id="news-file-upload" accept="image/*" style="display: none;" onchange="handleNewsImageUpload(this)">
+                    </div>
+                </div>
+                <div id="news-img-preview-container" style="display: none; margin-bottom: 20px; border: 1px dashed #ccc; padding: 10px; text-align: center; border-radius: 6px;">
+                    <span style="font-size: 0.8rem; color: #555; display: block; margin-bottom: 5px;">Selected Image Preview:</span>
+                    <img id="news-img-preview" src="" style="max-height: 140px; border-radius: 4px; object-fit: contain;">
+                </div>
+                <button class="btn" style="background: var(--dark);" onclick="addNewsArticle()">Post Announcement</button>
+            </div>
+        </div>
+
+        <div id="team-list" class="card-grid" style="margin-top: 34px;"></div>
         <div class="form-box" id="team-form-anchor">
             <h3 id="team-form-title">Register New Team</h3>
             <input type="text" id="t-name" placeholder="Team Name">
@@ -53,12 +77,10 @@
         </div>
     </section>
 
-    <!-- SCHEDULE SECTION -->
     <section id="calendar">
         <div id="cal-render"></div>
     </section>
 
-    <!-- MATCH CENTER -->
     <section id="match-center">
         <div id="match-list"></div>
         <div class="form-box" id="match-form-anchor">
@@ -76,7 +98,6 @@
         </div>
     </section>
 
-    <!-- STANDINGS SECTION -->
     <section id="stats">
         <table>
             <thead><tr><th>Pos</th><th>Team</th><th>PL</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr></thead>
@@ -84,7 +105,6 @@
         </table>
     </section>
 
-    <!-- TOP SCORERS -->
     <section id="scorers">
         <div class="form-box" style="margin-top:0; margin-bottom:15px; background:#e8f4fd;">
             <p style="margin:0; font-size:0.85rem; color:#1a2a6c;"><b> Tip:</b> Scorers update automatically based on your submitted results.</p>
@@ -95,7 +115,6 @@
         </table>
     </section>
 
-    <!-- KNOCKOUT SECTION -->
     <section id="knockout">
         <div id="knockout-warning" class="form-box" style="background:#fff3cd; color:#856404; display:none;">
             <p style="margin:0; font-weight:bold;">⚠️ Knockout phase locked</p>
@@ -128,7 +147,6 @@
     </section>
 </div>
 
-<!-- MATCH REPORT OVERLAY -->
 <div id="report-overlay">
     <div class="report-nav"><span onclick="closeReport()" style="cursor:pointer; margin-right:15px;">❮ Back</span> Match Detail</div>
     <div id="report-content"></div>
@@ -143,6 +161,10 @@
     let scheduledMatches = JSON.parse(localStorage.getItem('colpbol_sched')) || fallbackDataSource.scheduledMatches || {};
     let interviews = JSON.parse(localStorage.getItem('colpbol_interviews')) || fallbackDataSource.interviews || [];
     let knockoutMatches = JSON.parse(localStorage.getItem('colpbol_knockout')) || fallbackDataSource.knockoutMatches || { semi1: null, semi2: null, final: null };
+    
+    // Loaded array state for news feature linked to backup system profiles
+    let newsArticles = JSON.parse(localStorage.getItem('colpbol_news')) || fallbackDataSource.newsArticles || [];
+    let encodedImageBase64 = "";
 
     let editTeamIndex = null;
     let editMatchIndex = null;
@@ -154,6 +176,7 @@
         localStorage.setItem('colpbol_sched', JSON.stringify(scheduledMatches));
         localStorage.setItem('colpbol_interviews', JSON.stringify(interviews));
         localStorage.setItem('colpbol_knockout', JSON.stringify(knockoutMatches));
+        localStorage.setItem('colpbol_news', JSON.stringify(newsArticles));
     }
 
     function exportTournamentData() {
@@ -162,10 +185,11 @@
             matches: matches,
             scheduledMatches: scheduledMatches,
             interviews: interviews,
-            knockoutMatches: knockoutMatches
+            knockoutMatches: knockoutMatches,
+            newsArticles: newsArticles
         };
         
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent("const DEFAULT_TOURNAMENT_DATA = " + JSON.stringify(fullBackup, null, 2) + ";");
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
         downloadAnchor.setAttribute("download", "data.js");
@@ -175,6 +199,7 @@
     }
 
     function refreshAllViews() {
+        renderNews();
         renderTeams();
         renderMatchList();
         calculateStandings();
@@ -194,6 +219,81 @@
         if(id === 'stats') calculateStandings();
         if(id === 'scorers') renderScorers();
         if(id === 'knockout') checkAndRenderKnockout();
+    }
+
+    // NEW LOGIC: News Management Handlers
+    function handleNewsImageUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            encodedImageBase64 = e.target.result;
+            document.getElementById('news-img-preview').src = encodedImageBase64;
+            document.getElementById('news-img-preview-container').style.display = "block";
+            document.getElementById('news-url').value = ""; // Clear URL if uploading raw file
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function addNewsArticle() {
+        const title = document.getElementById('news-title').value;
+        let imgUrl = document.getElementById('news-url').value;
+        
+        // Use uploaded image file if link text area is empty
+        if (!imgUrl && encodedImageBase64) {
+            imgUrl = encodedImageBase64;
+        }
+        
+        if (!title) {
+            alert("Please input a headline title for the article.");
+            return;
+        }
+        
+        const backupImgPlaceholder = 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500';
+        newsArticles.unshift({
+            title: title,
+            image: imgUrl || backupImgPlaceholder,
+            timestamp: new Date().toLocaleDateString()
+        });
+        
+        saveAll();
+        renderNews();
+        
+        // Reset inputs
+        document.getElementById('news-title').value = "";
+        document.getElementById('news-url').value = "";
+        document.getElementById('news-file-upload').value = "";
+        document.getElementById('news-img-preview-container').style.display = "none";
+        document.getElementById('news-img-preview').src = "";
+        encodedImageBase64 = "";
+    }
+
+    function deleteNewsArticle(idx) {
+        if(confirm("Are you sure you want to remove this news notice?")) {
+            newsArticles.splice(idx, 1);
+            saveAll();
+            renderNews();
+        }
+    }
+
+    function renderNews() {
+        const container = document.getElementById('news-list');
+        if (newsArticles.length === 0) {
+            container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #888; padding: 20px; border: 1px dashed #ccc; border-radius: 8px;">No current news posted yet. Put up announcements down below!</div>`;
+            return;
+        }
+        
+        container.innerHTML = newsArticles.map((art, idx) => `
+            <div class="team-card-ui" style="display: flex; flex-direction: column; justify-content: space-between; text-align: left; padding: 15px;">
+                <div>
+                    <img src="${art.image}" class="team-img" style="height: 140px; border-radius: 6px 6px 0 0; margin-bottom: 12px; width:100%; object-fit:cover;">
+                    <span style="font-size: 0.75rem; color: #e63946; font-weight: bold; text-transform: uppercase;">Bulletin • ${art.timestamp || 'Recent'}</span>
+                    <h3 style="margin-top: 5px; font-size: 1.1rem; line-height: 1.3; color: var(--dark); min-height: 44px;">${art.title}</h3>
+                </div>
+                <button onclick="deleteNewsArticle(${idx})" style="background: transparent; color: #dc3545; border: none; font-size: 0.8rem; cursor: pointer; text-align: left; padding: 0; font-weight: bold; margin-top: 10px; width: max-content;">🗑️ Remove Notice</button>
+            </div>
+        `).join('');
     }
 
     function addTeam() {
@@ -399,7 +499,7 @@
             <div id="v-g" style="padding:15px;">${m.goals ? m.goals.split(',').map(x => `<div class="player-row">⚽ ${x.trim()}</div>`).join('') : '<p style="color:#999;text-align:center;">No goal data</p>'}</div>
             <div id="v-l" style="display:none;">
                 <div class="lineup-header">${m.tA}</div>${m.linA ? m.linA.split(',').map((p, x) => `<div class="player-row"><div class="p-num">${x+1}</div><div class="p-avatar"></div>${p.trim()}</div>`).join('') : ''}
-                <div class="lineup-header">${m.tB}</div>${m.linB ? m.linB.split(',').map((p, x) => `<div class="player-row"><div class="p-num">${x+1}</div><div class="p-avatar"></div>${p.trim()}</div>`).join('') : ''}
+                <div class="lineup-header">${m.tB}</div>${m.linB ? m.linB.split(',').map((p, x) => `<div class="p-num">${x+1}</div><div class="p-avatar"></div>${p.trim()}</div>`).join('') : ''}
             </div>`;
         document.getElementById('report-overlay').classList.add('active');
     }
